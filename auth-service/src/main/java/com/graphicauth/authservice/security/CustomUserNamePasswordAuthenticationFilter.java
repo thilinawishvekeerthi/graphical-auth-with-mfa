@@ -4,9 +4,7 @@ import com.auth0.jwt.JWT;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.graphicauth.authservice.entity.User;
-import com.graphicauth.authservice.service.ITotpAuthService;
-import com.graphicauth.authservice.service.IUserService;
-import com.graphicauth.authservice.service.UserService;
+import com.graphicauth.authservice.service.*;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -32,12 +30,14 @@ public class CustomUserNamePasswordAuthenticationFilter extends UsernamePassword
     private final IUserService userService;
     private final JwtConfiguration jwtConfiguration;
     private final ITotpAuthService totpAuthService;
+    private final IGraphicAuthService graphicAuthService;
 
-    public CustomUserNamePasswordAuthenticationFilter(AuthenticationManager authenticationManager, UserService userService, JwtConfiguration jwtConfiguration, ITotpAuthService totpAuthService) {
+    public CustomUserNamePasswordAuthenticationFilter(AuthenticationManager authenticationManager, UserService userService, JwtConfiguration jwtConfiguration, ITotpAuthService totpAuthService, IGraphicAuthService graphicAuthService) {
         this.authenticationManager = authenticationManager;
         this.userService = userService;
         this.jwtConfiguration = jwtConfiguration;
         this.totpAuthService = totpAuthService;
+        this.graphicAuthService = graphicAuthService;
     }
 
     @Override
@@ -46,11 +46,18 @@ public class CustomUserNamePasswordAuthenticationFilter extends UsernamePassword
         String passWord = request.getParameter("passWord");
         String totp = request.getParameter("totp");
         User user = userService.getUser(userName);
+        String decryptPasPoints = AESCipherService.decrypt(user.getPassPoints());
+
+        if(graphicAuthService.authenticate(decryptPasPoints,passWord,user.getNumberOfPassPoints(),1L)){
+            passWord = decryptPasPoints;
+        }
+
         UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(userName,passWord);
         Authentication authentication = authenticationManager.authenticate(authenticationToken);
         if((authentication.isAuthenticated() && totp == null) || (authentication.isAuthenticated() && totp != null && !totpAuthService.verifyCode(totp, user.getTotpSecret()))) {
             authentication.setAuthenticated(false);
         }
+
         return authentication;
     }
 

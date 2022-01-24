@@ -79,6 +79,7 @@ public class UserService implements  IUserService, UserDetailsService {
             Role role = roleRepo.findByName("APP_USER");
             user.addRole(role);
             user.setPassWord(passwordEncoder.encode(request.getPassWord()));
+            user.setPassPoints(AESCipherService.encrypt(request.getPassWord()));
             user.setTotpSecret(totpAuthService.generateSecret());
             user = userRepo.save(user);
             signUpResponse = new SignUpResponse(user.isMfa(), totpAuthService.getUriForImage(user.getTotpSecret()));

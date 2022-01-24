@@ -1,5 +1,6 @@
 package com.graphicauth.authservice.security;
 
+import com.graphicauth.authservice.service.IGraphicAuthService;
 import com.graphicauth.authservice.service.IJwtAuthManagerService;
 import com.graphicauth.authservice.service.ITotpAuthService;
 import com.graphicauth.authservice.service.UserService;
@@ -27,10 +28,11 @@ public class AppSecurityConfiguration extends WebSecurityConfigurerAdapter {
     private final JwtConfiguration jwtConfiguration;
     private final IJwtAuthManagerService jwtAuthManagerService;
     private final ITotpAuthService totpAuthService;
+    private final IGraphicAuthService graphicAuthService;
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        CustomUserNamePasswordAuthenticationFilter customAuthenticationFilter = new CustomUserNamePasswordAuthenticationFilter(authenticationManagerBean(), userService, jwtConfiguration, totpAuthService);
+        CustomUserNamePasswordAuthenticationFilter customAuthenticationFilter = new CustomUserNamePasswordAuthenticationFilter(authenticationManagerBean(), userService, jwtConfiguration, totpAuthService, graphicAuthService);
         customAuthenticationFilter.setFilterProcessesUrl("/api/login");
         http
                 .cors().and()
