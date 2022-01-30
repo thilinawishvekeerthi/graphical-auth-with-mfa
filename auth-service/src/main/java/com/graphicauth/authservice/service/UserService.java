@@ -21,8 +21,11 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import javax.sql.rowset.serial.SerialBlob;
 import javax.transaction.Transactional;
 import javax.validation.Valid;
+import java.sql.Blob;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -70,7 +73,7 @@ public class UserService implements  IUserService, UserDetailsService {
     }
 
     @Override
-    public SignUpResponse signUpUser(SignUpRequest request) throws QrGenerationException {
+    public SignUpResponse signUpUser(SignUpRequest request) throws QrGenerationException, SQLException {
         SignUpResponse signUpResponse = null;
         User user = getUser(request.getUserName());
         if(user == null){

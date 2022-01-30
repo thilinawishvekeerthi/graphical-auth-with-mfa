@@ -29,4 +29,16 @@ public class SignUpRequest {
 
     @NotNull()
     private Long numberOfPassPoints;
+
+    @NotNull()
+    private Long tolerance;
+
+    @NotNull()
+    private Long canvasX;
+
+    @NotNull()
+    private Long canvasY;
+
+    @NotNull()
+    private Long imageRef;
 }

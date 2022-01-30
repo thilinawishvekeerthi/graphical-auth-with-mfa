@@ -1,0 +1,30 @@
+<mat-card class="center-card">
+    <!-- <mat-card-title>Actions Buttons</mat-card-title> -->
+   <div style="position: absolute; padding-left: 175px; padding-top: 20px;">
+    <mat-card-subtitle class="sub-0">Graphic Auth
+      <mat-icon class="logo" >fingerprint</mat-icon>
+    </mat-card-subtitle>
+   </div>
+   <div style="padding-top: 70px;">
+    <mat-card-subtitle class="sub-1">Sign in</mat-card-subtitle>
+    <mat-card-subtitle class="sub-2">Use Your Graphic Auth Account</mat-card-subtitle>
+    <mat-card-content>
+      <form class="form-1">
+        <mat-form-field  appearance="fill">
+          <mat-label>User Account</mat-label>
+          <input type="userName" matInput [formControl]="userNameFormControl" placeholder="">
+          <mat-error *ngIf="userNameFormControl.hasError('required')">
+            User Name is <strong>required</strong>
+          </mat-error>
+        </mat-form-field>
+        <p>use create new account to create a new account or use the next button to sign in</p>
+      </form>
+    </mat-card-content>
+    <mat-card-actions class="button-set-1">
+      <a routerLink="/create-account" class="new-link">create new account</a>
+      <button mat-raised-button color="primary" class="next-button">Next</button>
+    </mat-card-actions>
+   </div>
+    
+  </mat-card>
+ 

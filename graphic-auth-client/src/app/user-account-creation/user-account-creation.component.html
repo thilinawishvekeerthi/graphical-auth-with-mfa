@@ -1,0 +1,147 @@
+<form class="form-1" >
+    <mat-drawer-container class="side-nav" flex >
+        <mat-drawer class="side-nav-drawer" mode="side" opened >
+            <mat-card class="center-card" *ngIf="!qrCodeEnable">
+               <mat-card-subtitle class="sub-1">Create Account</mat-card-subtitle>
+                <!-- <mat-card-subtitle class="sub-2">Use Your Graphic Auth Account</mat-card-subtitle> -->
+                <mat-card-content>
+                  <form class="form-1">
+                    <div class="row login-container" >
+                        <div class="col">
+                          <mat-form-field class="full-width" appearance="fill">
+                              <mat-label>User Name</mat-label>
+                              <input matInput placeholder="" [formControl]="userNameFormControl">
+                              <mat-error *ngIf="userNameFormControl.hasError('required')">
+                                User Name is <strong>required</strong>
+                              </mat-error>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                    <div class="row" style="padding-top: 10px;">
+                        <div class="col">
+                            <input type="file" class="file-input"  accept="image/png, image/jpeg" (change)="onFileSelected($event)" #fileUpload>
+                        </div>
+                        <p>Recommand to upload a memorable image</p>
+                        <div class="file-upload">
+    
+                            {{fileName || "please upload image for password"}}
+                         
+                             <button mat-mini-fab color="primary" class="upload-btn"
+                                [disabled]="!userNameFormControl.valid"
+                               (click)="uploadButtonClick($event)">
+                                 <mat-icon>attach_file</mat-icon>
+                             </button>
+                         </div>
+                         <p *ngIf="fileTyepeError" style="color: red; padding-top: 5px;  font-size: 1em !important;">only jpg and png formats are allowed</p>
+                             
+                    </div>
+                    <div *ngIf="imagePasswordUploaded">
+                        <div class="row">
+                            <div class="col">
+                                <div class="passpoint-slider-label" >
+                                    <mat-icon class="passpoint-slider-badge" matBadge="{{clickPoints.length}}" matBadgeColor="primary">touch_app</mat-icon>
+                                    <label id="example-name-label" class="example-name-label">Please click {{numberOfPassPoints}} points on the image </label>
+                                    <div style="float: right;padding-top: 8px; margin-right: 70px;">
+                                        <mat-icon aria-placeholder="settings">settings</mat-icon>
+                                        <mat-icon [ngStyle]="(clickPoints.length == 0)? { 'display': 'none' } : { 'color': 'black' }" aria-placeholder="reset" (click)="resetPoints()">restart_alt</mat-icon>
+                                    </div>
+                                </div>
+                                <!-- <p>Recommand to use many passpints as possible</p>
+                                <mat-slider
+                                    class="full-width"
+                                    name="max"
+                                    [disabled]="false"
+                                    [invert]="false"
+                                    [max]="20"
+                                    [min]="4"
+                                    [step]="1"
+                                    [thumbLabel]="true"
+                                    [(ngModel)]="numberOfPassPoints"
+                                    [vertical]="false"
+                                    >
+                                </mat-slider> -->
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <section class="example-section">
+                                    <mat-progress-bar
+                                        class="example-margin"
+                                        [color]="'primary'"
+                                        [mode]="'buffer'"
+                                        [value]="100/numberOfPassPoints*clickPoints.length"
+                                        [bufferValue]="0">
+                                    </mat-progress-bar>
+                                  </section>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <div *ngIf="clickPoints.length == numberOfPassPoints">
+                        <div class="row">
+                            <div class="col">
+                                <div class="passpoint-slider-label" >
+                                    <mat-icon *ngIf="repeatProgressColor == 'primary'" class="passpoint-slider-badge" matBadge="{{repeatClickPoints.length}}" matBadgeColor="primary">touch_app</mat-icon>
+                                    <mat-icon *ngIf="repeatProgressColor == 'warn'" class="passpoint-slider-badge" matBadge="{{repeatClickPoints.length}}" matBadgeColor="warn">touch_app</mat-icon>
+                                    <label id="example-name-label" class="example-name-label">Repeat the click points on the image </label>
+                                    <p *ngIf="repeatProgressColor == 'warn'" style="color: red; padding-top: 5px;  font-size: 1em !important;">click points mismatch !!</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <section class="example-section">
+                                    <mat-progress-bar
+                                        class="example-margin"
+                                        [color]="repeatProgressColor"
+                                        [mode]="'buffer'"
+                                        [value]="100/numberOfPassPoints*repeatClickPoints.length"
+                                        [bufferValue]="0">
+                                    </mat-progress-bar>
+                                  </section>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- <div>{{passPointObj | json }}</div> -->
+                  </form>
+                </mat-card-content>
+                <mat-card-actions class="button-set-1">
+                 <button mat-raised-button color="primary" class="next-button"
+                  (click)="nextButtonClick()"
+                  [disabled]="!userNameFormControl.valid || !(clickPoints.length == numberOfPassPoints) || !(repeatClickPoints.length == numberOfPassPoints) ">Next</button>
+                </mat-card-actions>
+            </mat-card> 
+            <mat-card class="center-card" *ngIf="qrCodeEnable">
+                 <mat-card-subtitle class="sub-2">Scan the QR with an Authenticator app</mat-card-subtitle>
+                 <mat-card-content>
+                  <img [src]="qrCode()" alt="" style="width: 300px; height: 300px; margin-left: 25px;"/>
+                   <form class="form-1">
+                    <div class="row login-container" >
+                        <div class="col">
+                          <mat-form-field class="full-width" appearance="fill">
+                              <mat-label>Enter TOTP</mat-label>
+                              <input matInput placeholder="" [formControl]="totpFormControl">
+                              <mat-error *ngIf="totpFormControl.hasError('required')">
+                                TOTP is <strong>required</strong>
+                              </mat-error>
+                            </mat-form-field>
+                        </div>
+                    </div>
+                   </form>
+                   
+                 </mat-card-content>
+                 <mat-card-actions class="button-set-1">
+                  <button mat-raised-button color="primary" class="next-button"
+                   (click)="verify()"
+                   [disabled]="!totpFormControl.valid">Verify</button>
+                 </mat-card-actions>
+             </mat-card> 
+               
+              
+        </mat-drawer>
+        <mat-drawer-content class="main-container">
+            <canvas #passwordCanvas width="canvasX" height="canvasY" id='password-canvas'>
+            </canvas>
+        </mat-drawer-content>
+    </mat-drawer-container>    
+</form>

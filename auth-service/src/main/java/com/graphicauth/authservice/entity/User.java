@@ -9,6 +9,7 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
+import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -41,6 +42,13 @@ public class User {
     @NotNull()
     private Long numberOfPassPoints;
 
+    private Long tolerance;
+
+    private Long canvasX;
+
+    private Long canvasY;
+
+    private Long imageRef;
 
     private String totpSecret;
 
