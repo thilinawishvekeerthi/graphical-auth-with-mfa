@@ -39,13 +39,7 @@ public class TotpAuthService implements ITotpAuthService{
                 .build();
 
         QrGenerator generator = new ZxingPngQrGenerator();
-        byte[] imageData = new byte[0];
-
-        try {
-            imageData = generator.generate(data);
-        } catch (QrGenerationException e) {
-            throw e;
-        }
+        byte[] imageData = generator.generate(data);
 
         String mimeType = generator.getImageMimeType();
 
@@ -63,6 +57,11 @@ public class TotpAuthService implements ITotpAuthService{
     @Override
     public boolean verifyCodeByUser(String code, String userName) {
         User user = userRepo.findByUserName(userName);
-        return user != null && user.getTotpSecret() != null ? verifyCode(code,user.getTotpSecret()) : false;
+        return verify(code, user);
+    }
+
+    private boolean verify(String code, User user) {
+        if(user != null && user.getTotpSecret() != null) return verifyCode(code, user.getTotpSecret());
+        else return false;
     }
 }

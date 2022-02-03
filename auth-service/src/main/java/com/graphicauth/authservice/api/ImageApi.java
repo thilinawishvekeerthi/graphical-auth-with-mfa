@@ -1,11 +1,13 @@
 package com.graphicauth.authservice.api;
 
+import com.graphicauth.authservice.dto.ImageResponse;
 import com.graphicauth.authservice.service.IImageService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
@@ -14,9 +16,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.IOException;
 
 @RestController
-@RequiredArgsConstructor
-@CrossOrigin(origins = "http://localhost:4200")
 @RequestMapping("api/image")
+@RequiredArgsConstructor
 public class ImageApi {
     private final IImageService imageService;
 
@@ -35,13 +36,13 @@ public class ImageApi {
         }
     }
 
-    @GetMapping(value = "/{userName}", produces = MediaType.IMAGE_JPEG_VALUE)
-    Resource downloadImage(@PathVariable String userName) {
-        byte[] image = imageService.getImageByUserName(userName);
+    @GetMapping(value = "/user/{userName}")
+    ResponseEntity<ImageResponse> downloadImageByUserName(@PathVariable String userName) {
+        ImageResponse image = imageService.getImageByUserName(userName);
         if(image == null){
             throw new ResponseStatusException(HttpStatus.NOT_FOUND);
         }else{
-            return new ByteArrayResource(image);
+            return ResponseEntity.ok(image);
         }
     }
 }

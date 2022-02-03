@@ -1,9 +1,11 @@
 package com.graphicauth.authservice.service;
 
+import com.graphicauth.authservice.dto.ImageResponse;
 import com.graphicauth.authservice.entity.Image;
 import com.graphicauth.authservice.entity.User;
 import com.graphicauth.authservice.repo.ImageRepo;
 import com.graphicauth.authservice.repo.UserRepo;
+import dev.samstevens.totp.util.Utils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
@@ -22,20 +24,30 @@ public class ImageService implements IImageService{
         Image image = new Image();
         image.setName(imageFile.getName());
         image.setContent(imageFile.getBytes());
+        image.setMemType(imageFile.getContentType());
         image = imageRepo.save(image);
         return image.getId();
     }
 
     @Override
-    public byte[] getImageById(Long Id) {
-        Optional<Image> optionalImage = imageRepo.findById(Id);
+    public byte[] getImageById(Long id) {
+        Optional<Image> optionalImage = imageRepo.findById(id);
         return optionalImage.isPresent() ? optionalImage.get().getContent() : null;
     }
 
+    public Image getImage(Long id) {
+        Optional<Image> optionalImage = imageRepo.findById(id);
+        return optionalImage.isPresent() ? optionalImage.get() : null;
+    }
     @Override
-    public byte[] getImageByUserName(String username) {
+    public ImageResponse getImageByUserName(String username) {
         User user = this.userRepo.findByUserName(username);
-        if(user != null && user.getImageRef() != null) return getImageById(user.getImageRef());
+        Image image = getImage(user.getImageRef());
+        if(isImageRefExists(user)) return new ImageResponse(Utils.getDataUriForImage(image.getContent(), image.getMemType())) ;
         return null;
+    }
+
+    private boolean isImageRefExists(User user) {
+        return user != null && user.getImageRef() != null;
     }
 }

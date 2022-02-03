@@ -2,7 +2,7 @@ import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild }
 import { FormControl, Validators } from '@angular/forms';
 import { ThemePalette } from '@angular/material/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { PRIMARY_OUTLET } from '@angular/router';
+import { PRIMARY_OUTLET, Router } from '@angular/router';
 import { fromEvent } from 'rxjs';
 import { UserAccountCreationService } from './user-account-creation.service';
 import {MatSnackBar} from '@angular/material/snack-bar';
@@ -34,7 +34,8 @@ export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
 
   constructor(private userAccountService: UserAccountCreationService,
               private sanitizer:DomSanitizer,
-              private _snackBar: MatSnackBar) { }
+              private _snackBar: MatSnackBar,
+              private router: Router) { }
   
   ngAfterViewInit(): void { 
     this.initCanvas();
@@ -242,6 +243,7 @@ export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
           verticalPosition: "top",
           duration: 4 * 1000,
         });
+        this.router.navigate(['user-profile']);
       }else{
         this._snackBar.open("totp incorrect","close",{
           horizontalPosition:"left",

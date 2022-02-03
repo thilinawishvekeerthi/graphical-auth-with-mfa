@@ -20,4 +20,6 @@ public class Image {
     byte[] content;
 
     String name;
+
+    String memType;
 }

@@ -1,5 +1,6 @@
 package com.graphicauth.authservice.service;
 
+import com.graphicauth.authservice.dto.ConfigDto;
 import com.graphicauth.authservice.dto.SignUpRequest;
 import com.graphicauth.authservice.dto.SignUpResponse;
 import com.graphicauth.authservice.dto.UserDto;
@@ -17,4 +18,5 @@ public interface IUserService {
     User getUser(String userName);
     List<UserDto> getAllUsers();
     SignUpResponse signUpUser(SignUpRequest request) throws QrGenerationException, SQLException;
+    ConfigDto getUserConfig(String userName);
 }
