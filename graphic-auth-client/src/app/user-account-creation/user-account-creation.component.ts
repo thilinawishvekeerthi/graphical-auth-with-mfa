@@ -243,7 +243,7 @@ export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
           verticalPosition: "top",
           duration: 4 * 1000,
         });
-        this.router.navigate(['user-profile']);
+        this.router.navigate(['']);
       }else{
         this._snackBar.open("totp incorrect","close",{
           horizontalPosition:"left",

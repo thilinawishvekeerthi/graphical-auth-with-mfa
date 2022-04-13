@@ -138,6 +138,7 @@ export class GraphicLoginComponent implements OnInit, AfterViewInit {
         this.router.navigate(['user-profile']);
       }
     }, err=>{
+      this.resetPoints();
       this._snackBar.open("Authentication Fails","close",{
         horizontalPosition:"left",
         verticalPosition: "top",
