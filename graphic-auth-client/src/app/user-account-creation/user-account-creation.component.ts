@@ -5,8 +5,9 @@ import { DomSanitizer } from '@angular/platform-browser';
 import { PRIMARY_OUTLET, Router } from '@angular/router';
 import { fromEvent } from 'rxjs';
 import { UserAccountCreationService } from './user-account-creation.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
-
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { MatDialog } from '@angular/material/dialog';
+import { ImagePasswordConfigurationComponent } from '../shared/components/image-password-configuration/image-password-configuration.component';
 @Component({
   selector: 'app-user-account-creation',
   templateUrl: './user-account-creation.component.html',
@@ -35,7 +36,9 @@ export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
   constructor(private userAccountService: UserAccountCreationService,
               private sanitizer:DomSanitizer,
               private _snackBar: MatSnackBar,
-              private router: Router) { }
+              private router: Router,
+              public dialog: MatDialog
+              ) { }
   
   ngAfterViewInit(): void { 
     this.initCanvas();
@@ -68,11 +71,11 @@ export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
       }
     }
   }
-
+  fillStyle: string = "#ffffff";
   renderClickPoints(event : MouseEvent){
     this.canvasRenderContext.beginPath();
     this.canvasRenderContext.arc(event.offsetX, event.offsetY, this.tolerance, 50, 0, true);
-    this.canvasRenderContext.fillStyle ="white";
+    this.canvasRenderContext.fillStyle = this.fillStyle;
     this.canvasRenderContext.fill();
     this.canvasRenderContext.restore();
     setTimeout(()=>{
@@ -248,6 +251,24 @@ export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
           verticalPosition: "top",
           duration: 4 * 1000,
         });
+      }
+    });
+  }
+
+  backButton(){
+    this.router.navigate(['']);
+  }
+
+  openConfiguraionDialog(){
+    const dialogRef = this.dialog.open(ImagePasswordConfigurationComponent, {
+      width: '300px',
+      data: {numberOfPassPoints: this.numberOfPassPoints, fillStyle: this.fillStyle},
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if(result){
+        this.numberOfPassPoints  = result.numberOfPassPoints;
+        this.fillStyle = result.fillStyle;
       }
     });
   }

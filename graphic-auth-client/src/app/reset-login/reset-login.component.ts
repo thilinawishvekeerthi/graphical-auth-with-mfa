@@ -1,12 +1,13 @@
-import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
+import {  Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { FormControl, Validators } from '@angular/forms';
 import { ThemePalette } from '@angular/material/core';
-import { DomSanitizer } from '@angular/platform-browser';
 import { PRIMARY_OUTLET, Router, ActivatedRoute } from '@angular/router';
 import { fromEvent } from 'rxjs';
 import { UserAccountCreationService } from '../user-account-creation/user-account-creation.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { GraphicLoginService } from '../graphic-login/graphic-login.service';
+import { MatDialog } from '@angular/material/dialog';
+import { ImagePasswordConfigurationComponent } from '../shared/components/image-password-configuration/image-password-configuration.component';
 
 @Component({
   selector: 'app-reset-login',
@@ -40,7 +41,8 @@ export class ResetLoginComponent implements OnInit {
               private route: ActivatedRoute,
               private _snackBar: MatSnackBar,
               private loginService : GraphicLoginService,
-              private router: Router) { }
+              private router: Router,
+              public dialog: MatDialog) { }
   
   ngAfterViewInit(): void { 
     this.initCanvas();
@@ -80,10 +82,11 @@ export class ResetLoginComponent implements OnInit {
     }
   }
 
+  fillStyle: string = "#ffffff";
   renderClickPoints(event : MouseEvent){
     this.canvasRenderContext.beginPath();
     this.canvasRenderContext.arc(event.offsetX, event.offsetY, this.tolerance, 50, 0, true);
-    this.canvasRenderContext.fillStyle ="white";
+    this.canvasRenderContext.fillStyle = this.fillStyle;
     this.canvasRenderContext.fill();
     this.canvasRenderContext.restore();
     setTimeout(()=>{
@@ -287,6 +290,7 @@ export class ResetLoginComponent implements OnInit {
         this.verifyToken = res.veryToken;
         this.initCanvas();
       }else{
+        this.totpFormControl.patchValue('');
         this._snackBar.open("totp incorrect","close",{
           horizontalPosition:"left",
           verticalPosition: "top",
@@ -296,4 +300,22 @@ export class ResetLoginComponent implements OnInit {
     });
   }
 
+  backButton(){
+    this.router.navigate(['']);
+  }
+
+  openConfiguraionDialog(){
+    const dialogRef = this.dialog.open(ImagePasswordConfigurationComponent, {
+      width: '300px',
+      data: {numberOfPassPoints: this.numberOfPassPoints, fillStyle: this.fillStyle},
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if(result){
+        this.numberOfPassPoints  = result.numberOfPassPoints;
+        this.fillStyle = result.fillStyle;
+     
+      }
+    });
+  }
 }

@@ -42,24 +42,11 @@
                                     <mat-icon class="passpoint-slider-badge" matBadge="{{clickPoints.length}}" matBadgeColor="primary">touch_app</mat-icon>
                                     <label id="example-name-label" class="example-name-label">Please click {{numberOfPassPoints}} points on the image </label>
                                     <div style="float: right;padding-top: 8px; margin-right: 70px;">
-                                        <mat-icon aria-placeholder="settings">settings</mat-icon>
+                                        <mat-icon aria-placeholder="settings" (click)="openConfiguraionDialog()">settings</mat-icon>
                                         <mat-icon [ngStyle]="(clickPoints.length == 0)? { 'display': 'none' } : { 'color': 'black' }" aria-placeholder="reset" (click)="resetPoints()">restart_alt</mat-icon>
                                     </div>
                                 </div>
-                                <!-- <p>Recommand to use many passpints as possible</p>
-                                <mat-slider
-                                    class="full-width"
-                                    name="max"
-                                    [disabled]="false"
-                                    [invert]="false"
-                                    [max]="20"
-                                    [min]="4"
-                                    [step]="1"
-                                    [thumbLabel]="true"
-                                    [(ngModel)]="numberOfPassPoints"
-                                    [vertical]="false"
-                                    >
-                                </mat-slider> -->
+                                
                             </div>
                         </div>
                         <div class="row">
@@ -106,6 +93,8 @@
                   </form>
                 </mat-card-content>
                 <mat-card-actions class="button-set-1">
+                 <button  mat-raised-button color="primary" class="next-button"
+                  (click)="backButton()"  >Back</button>
                  <button mat-raised-button color="primary" class="next-button"
                   (click)="nextButtonClick()"
                   [disabled]="!userNameFormControl.valid || !(clickPoints.length == numberOfPassPoints) || !(repeatClickPoints.length == numberOfPassPoints) ">Next</button>
@@ -131,6 +120,8 @@
                    
                  </mat-card-content>
                  <mat-card-actions class="button-set-1">
+                  <button  mat-raised-button color="primary" class="next-button"
+                   (click)="backButton()"  >Back</button>
                   <button mat-raised-button color="primary" class="next-button"
                    (click)="verify()"
                    [disabled]="!totpFormControl.valid">Verify</button>
