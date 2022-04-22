@@ -9,7 +9,6 @@ import javax.persistence.*;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.sql.Blob;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -51,6 +50,8 @@ public class User {
     private Long imageRef;
 
     private String totpSecret;
+
+    private String verifyToken;
 
     @ManyToMany(cascade = {CascadeType.PERSIST , CascadeType.MERGE}, fetch = FetchType.EAGER)
     @JoinTable(name="users_roles", joinColumns = @JoinColumn(name="user_id"), inverseJoinColumns = @JoinColumn(name = "role_id"))

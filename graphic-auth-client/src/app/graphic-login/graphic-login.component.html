@@ -48,6 +48,11 @@
                   </form>
                 </mat-card-content>
                 <mat-card-actions class="button-set-1">
+                 <a *ngIf="passwordRestButtonEnabled" routerLink="/reset-account/{{userNameEncrypted}}/{{canvasX}}/{{canvasY}}" class="new-link">reset password</a>
+                 <button 
+                 mat-raised-button color="primary" class="next-button"
+                 (click)="backButton()"
+                 >Back</button>
                  <button *ngIf="!twofactorEnable"
                   mat-raised-button color="primary" class="next-button"
                   (click)="loginButtonClick()"

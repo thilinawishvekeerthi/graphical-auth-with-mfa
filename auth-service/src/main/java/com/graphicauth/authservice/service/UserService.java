@@ -1,10 +1,7 @@
 package com.graphicauth.authservice.service;
 
 
-import com.graphicauth.authservice.dto.ConfigDto;
-import com.graphicauth.authservice.dto.SignUpRequest;
-import com.graphicauth.authservice.dto.SignUpResponse;
-import com.graphicauth.authservice.dto.UserDto;
+import com.graphicauth.authservice.dto.*;
 import com.graphicauth.authservice.entity.Role;
 import com.graphicauth.authservice.entity.User;
 import com.graphicauth.authservice.repo.RoleRepo;
@@ -67,7 +64,6 @@ public class UserService implements  IUserService, UserDetailsService {
 
     @Override
     public List<UserDto> getAllUsers() {
-
         return userRepo.findAll().stream().map(user -> new UserDto(user.getId(),user.getUserName(), user.getEmail(), user.isActive(), user.isMfa(), user.getRoles())).collect(Collectors.toList());
     }
 
@@ -96,6 +92,24 @@ public class UserService implements  IUserService, UserDetailsService {
         User user = getUser(userName);
         if(user == null) throw  new UsernameNotFoundException("User Not Found");
         return new ConfigDto(user.getUserName(), user.getCanvasX(), user.getCanvasY());
+    }
+
+    @Override
+    public Boolean resetUser(ResetUserRequest resetUserRequest) {
+        User user = getUser(resetUserRequest.getUserName());
+        if(user != null && user.getVerifyToken().equals(resetUserRequest.getVerifyToken())){
+            user.setPassWord(passwordEncoder.encode(resetUserRequest.getPassPoints()));
+            user.setPassPoints(AESCipherService.encrypt(resetUserRequest.getPassPoints()));
+            user.setNumberOfPassPoints(resetUserRequest.getNumberOfPassPoints());
+            user.setTolerance(resetUserRequest.getTolerance());
+            user.setImageRef(resetUserRequest.getImageRef());
+            user.setCanvasX(resetUserRequest.getCanvasX());
+            user.setCanvasY(resetUserRequest.getCanvasY());
+            userRepo.save(user);
+            return true;
+        }else{
+            throw new BadCredentialsException("Invalid Credentials");
+        }
     }
 
     @Override

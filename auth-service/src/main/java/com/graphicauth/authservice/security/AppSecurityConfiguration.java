@@ -46,6 +46,8 @@ public class AppSecurityConfiguration extends WebSecurityConfigurerAdapter {
                 .and()
                 .authorizeRequests().antMatchers("/api/auth/sign-up/**").permitAll()
                 .and()
+                .authorizeRequests().antMatchers("/api/auth/reset/**").permitAll()
+                .and()
                 .authorizeRequests().antMatchers("/api/auth/totp/**").permitAll()
                 .and()
                 .authorizeRequests().antMatchers("/api/image/**").permitAll()

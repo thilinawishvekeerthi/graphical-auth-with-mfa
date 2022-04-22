@@ -24,6 +24,14 @@ export class UserAccountCreationService {
     return this.http.post(API_CONFIG_URI.VERYFY_TOTP, verifyRequest);
   }
 
+  resetAccount(resetUserRequest:any):Observable<any>{
+    return this.http.post(API_CONFIG_URI.RESET_ACOUNT, resetUserRequest);
+  }
+
+  verifyTotpUpdate(verifyRequest:any):Observable<any>{
+    return this.http.post(API_CONFIG_URI.VERYFY_TOTP_UPDATE, verifyRequest);
+  }
+  
   generatePassword(passPoints: any[]):string{
     let password = "";
     let index = 0;

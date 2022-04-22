@@ -43,7 +43,7 @@ public class ImageService implements IImageService{
     public ImageResponse getImageByUserName(String username) {
         User user = this.userRepo.findByUserName(username);
         Image image = getImage(user.getImageRef());
-        if(isImageRefExists(user)) return new ImageResponse(Utils.getDataUriForImage(image.getContent(), image.getMemType())) ;
+        if(isImageRefExists(user)) return new ImageResponse(image.getId(),Utils.getDataUriForImage(image.getContent(), image.getMemType())) ;
         return null;
     }
 

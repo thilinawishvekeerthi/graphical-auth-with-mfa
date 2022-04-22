@@ -4,6 +4,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute, Router } from '@angular/router';
 import { fromEvent } from 'rxjs';
 import { GraphicLoginService } from './graphic-login.service';
+import { AuthenticationService } from '../shared/services/authentication.service';
+import { Auth } from '../shared/services/auth';
 
 @Component({
   selector: 'app-graphic-login',
@@ -21,14 +23,17 @@ export class GraphicLoginComponent implements OnInit, AfterViewInit {
   public imageloading:boolean =true;
   public clickPoints: any[] = [];
   private userName : string ="";
+  public userNameEncrypted : string ="";
   private passwordImage:any;
   passPointObj: any;
   private tolerance:number = 10;
+  passwordRestButtonEnabled : boolean = false;
 
   constructor(private loginService : GraphicLoginService,
               private route: ActivatedRoute,
               private _snackBar: MatSnackBar,
-              private router: Router) { }
+              private router: Router,
+              private authService : AuthenticationService) { }
 
   ngAfterViewInit(): void {
     fromEvent(this.passwordCanvas?.nativeElement, 'mousedown').subscribe(res => {
@@ -41,6 +46,7 @@ export class GraphicLoginComponent implements OnInit, AfterViewInit {
       this.userName = atob(params['userName']);
       this.canvasX = Number(params['canvasX']);
       this.canvasY = Number(params['canvasY']);
+      this.userNameEncrypted = btoa(this.userName);
       this.loginService.getImagePassword(this.userName).subscribe(res=>{
         if(res){
           this.passwordImage =res.file;
@@ -128,13 +134,14 @@ export class GraphicLoginComponent implements OnInit, AfterViewInit {
     this.loginService.Authenticate(authRequest).subscribe(res=>{
       if(res && res.two_factor_auth != undefined){
         this.twofactorEnable = res.two_factor_auth;
+        this.passwordRestButtonEnabled = false;
       }else if(res){
+        this.setAuthenticationDetails(res);
         this._snackBar.open("Authentication Success !!","close",{
           horizontalPosition:"left",
           verticalPosition: "top",
           duration: 4 * 1000,
         });
-        console.log(res);
         this.router.navigate(['user-profile']);
       }
     }, err=>{
@@ -144,9 +151,25 @@ export class GraphicLoginComponent implements OnInit, AfterViewInit {
         verticalPosition: "top",
         duration: 4 * 1000,
       });
+      this.passwordRestButtonEnabled = true;
     });
   }
+  private setAuthenticationDetails(res: any) {
+    let auth = new Auth();
+    auth.acessToken = res.access_token;
+    auth.refreshToken = res.refresh_token;
+    this.authService.Auth = auth;
+  }
+
   resetPoints(){
     this.clickPoints = [];
+  }
+
+  backButton(){
+    this.router.navigate(['']);
+  }
+
+  resetPasswordRedirect(){
+   this.router.navigate(['login-account',btoa(this.userName),this.canvasX,this.canvasY]);
   }
 }

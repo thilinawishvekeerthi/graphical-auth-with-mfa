@@ -23,14 +23,16 @@ import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { GraphicLoginComponent } from './graphic-login/graphic-login.component';
 import { UserProfileComponent } from './user-profile/user-profile.component';
 import {MatToolbarModule} from '@angular/material/toolbar';
-
+import {MatMenuModule} from '@angular/material/menu';
+import { ResetLoginComponent } from './reset-login/reset-login.component';
 @NgModule({
   declarations: [
     AppComponent,
     IndexPageComponent,
     UserAccountCreationComponent,
     GraphicLoginComponent,
-    UserProfileComponent
+    UserProfileComponent,
+    ResetLoginComponent
   ],
   imports: [
     BrowserModule,
@@ -51,7 +53,8 @@ import {MatToolbarModule} from '@angular/material/toolbar';
     FormsModule,
     HttpClientModule,
     MatSnackBarModule,
-    MatToolbarModule
+    MatToolbarModule,
+    MatMenuModule
   ],
   providers: [],
   bootstrap: [AppComponent]

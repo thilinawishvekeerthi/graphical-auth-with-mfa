@@ -1,5 +1,6 @@
 package com.graphicauth.authservice.service;
 
+import com.graphicauth.authservice.dto.TotpVerifyResponse;
 import com.graphicauth.authservice.entity.User;
 import com.graphicauth.authservice.repo.UserRepo;
 import dev.samstevens.totp.code.*;
@@ -13,6 +14,8 @@ import dev.samstevens.totp.time.SystemTimeProvider;
 import dev.samstevens.totp.time.TimeProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 
@@ -58,6 +61,17 @@ public class TotpAuthService implements ITotpAuthService{
     public boolean verifyCodeByUser(String code, String userName) {
         User user = userRepo.findByUserName(userName);
         return verify(code, user);
+    }
+
+    @Override
+    public TotpVerifyResponse verifyTotp(String code, String userName) {
+        User user = userRepo.findByUserName(userName);
+        boolean isVerified = verify(code, user);
+        String verifyToken = isVerified ? UUID.randomUUID().toString() : "";
+        user.setVerifyToken(verifyToken);
+        userRepo.save(user);
+
+        return new TotpVerifyResponse(isVerified, verifyToken);
     }
 
     private boolean verify(String code, User user) {
