@@ -22,9 +22,11 @@ import { HttpClientModule } from '@angular/common/http';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { GraphicLoginComponent } from './graphic-login/graphic-login.component';
 import { UserProfileComponent } from './user-profile/user-profile.component';
-import {MatToolbarModule} from '@angular/material/toolbar';
-import {MatMenuModule} from '@angular/material/menu';
+import { MatToolbarModule } from '@angular/material/toolbar';
+import { MatMenuModule } from '@angular/material/menu';
 import { ResetLoginComponent } from './reset-login/reset-login.component';
+import { ImagePasswordConfigurationComponent } from './shared/components/image-password-configuration/image-password-configuration.component';
+import { MatDialogModule } from '@angular/material/dialog';
 @NgModule({
   declarations: [
     AppComponent,
@@ -32,7 +34,8 @@ import { ResetLoginComponent } from './reset-login/reset-login.component';
     UserAccountCreationComponent,
     GraphicLoginComponent,
     UserProfileComponent,
-    ResetLoginComponent
+    ResetLoginComponent,
+    ImagePasswordConfigurationComponent
   ],
   imports: [
     BrowserModule,
@@ -54,7 +57,8 @@ import { ResetLoginComponent } from './reset-login/reset-login.component';
     HttpClientModule,
     MatSnackBarModule,
     MatToolbarModule,
-    MatMenuModule
+    MatMenuModule,
+    MatDialogModule
   ],
   providers: [],
   bootstrap: [AppComponent]

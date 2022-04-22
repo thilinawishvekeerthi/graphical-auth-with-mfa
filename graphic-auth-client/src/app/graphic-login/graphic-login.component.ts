@@ -145,13 +145,15 @@ export class GraphicLoginComponent implements OnInit, AfterViewInit {
         this.router.navigate(['user-profile']);
       }
     }, err=>{
-      this.resetPoints();
+      if(!totp){
+        this.resetPoints();
+      }
       this._snackBar.open("Authentication Fails","close",{
         horizontalPosition:"left",
         verticalPosition: "top",
         duration: 4 * 1000,
       });
-      this.passwordRestButtonEnabled = true;
+      this.passwordRestButtonEnabled = !totp;
     });
   }
   private setAuthenticationDetails(res: any) {
