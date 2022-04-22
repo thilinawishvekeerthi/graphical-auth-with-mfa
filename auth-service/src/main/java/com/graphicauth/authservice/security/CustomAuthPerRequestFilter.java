@@ -1,5 +1,6 @@
 package com.graphicauth.authservice.security;
 
+import com.auth0.jwt.exceptions.JWTVerificationException;
 import com.auth0.jwt.exceptions.TokenExpiredException;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -31,7 +32,7 @@ public class CustomAuthPerRequestFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-        if(request.getServletPath().equals("/api/login") || request.getServletPath().equals("/api/auth/sign-up")){
+        if(request.getServletPath().equals("/api/login") || request.getServletPath().equals("/api/auth/sign-up") || isSwaggerPath(request)){
             filterChain.doFilter(request,response);
         }else{
             String authorizationHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
@@ -40,39 +41,48 @@ public class CustomAuthPerRequestFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);  		// If not valid, go to the next filter.
                 return;
             }
-            if(authorizationHeader != null && authorizationHeader.startsWith(tokenPreFix)){
-                String token = authorizationHeader.substring(tokenPreFix.length());
-                try {
-                    if(this.jwtAuthManagerService.validateToken(token)){
-                        DecodedJWT decodedJWT = this.jwtAuthManagerService.getClaimsFromJWT(token);
-                        String user = decodedJWT.getSubject();
-                        String [] roles = decodedJWT.getClaim("roles").asArray(String.class);
-                        Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-                        Arrays.stream(roles).forEach(role->authorities.add(new SimpleGrantedAuthority(role)));
-                        UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user, null,authorities);
-                        SecurityContextHolder.getContext().setAuthentication(authenticationToken);
-                        filterChain.doFilter(request,response);
-                    }
-                }
-                catch (TokenExpiredException tokenExpiredException){
-                    Map<String, String> error = new HashMap<>();
-                    error.put("Error_Code", "455");
-                    error.put("Error_Message", tokenExpiredException.getMessage());
-                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                    response.setStatus(HttpStatus.FORBIDDEN.value());
-                    new ObjectMapper().writeValue(response.getOutputStream(),error);
-                }
-                catch (Exception exception){
-                        Map<String, String> error = new HashMap<>();
-                        error.put("Error_Message", exception.getMessage());
-                        response.setContentType(MediaType.APPLICATION_JSON_VALUE);
-                        response.setStatus(HttpStatus.FORBIDDEN.value());
-                        new ObjectMapper().writeValue(response.getOutputStream(),error);
-                }
-
-            }
+            validateJWT(request, response, filterChain, authorizationHeader, tokenPreFix);
         }
 
 
+    }
+
+    private boolean isSwaggerPath(HttpServletRequest request) {
+        return request.getServletPath().contains("/swagger-ui") || request.getServletPath().contains("/v3/api-docs/");
+    }
+
+
+    private void validateJWT(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain, String authorizationHeader, String tokenPreFix) throws IOException , JWTVerificationException {
+        if(authorizationHeader != null && authorizationHeader.startsWith(tokenPreFix)){
+            String token = authorizationHeader.substring(tokenPreFix.length());
+            try {
+                if(this.jwtAuthManagerService.validateToken(token)){
+                    DecodedJWT decodedJWT = this.jwtAuthManagerService.getClaimsFromJWT(token);
+                    String user = decodedJWT.getSubject();
+                    String [] roles = decodedJWT.getClaim("roles").asArray(String.class);
+                    Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
+                    Arrays.stream(roles).forEach(role->authorities.add(new SimpleGrantedAuthority(role)));
+                    UsernamePasswordAuthenticationToken authenticationToken = new UsernamePasswordAuthenticationToken(user, null,authorities);
+                    SecurityContextHolder.getContext().setAuthentication(authenticationToken);
+                    filterChain.doFilter(request, response);
+                }
+            }
+            catch (TokenExpiredException tokenExpiredException){
+                Map<String, String> error = new HashMap<>();
+                error.put("Error_Code", "455");
+                error.put("Error_Message", tokenExpiredException.getMessage());
+                response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                response.setStatus(HttpStatus.FORBIDDEN.value());
+                new ObjectMapper().writeValue(response.getOutputStream(),error);
+            }
+            catch (Exception exception){
+                    Map<String, String> error = new HashMap<>();
+                    error.put("Error_Message", exception.getMessage());
+                    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+                    response.setStatus(HttpStatus.FORBIDDEN.value());
+                    new ObjectMapper().writeValue(response.getOutputStream(),error);
+            }
+
+        }
     }
 }

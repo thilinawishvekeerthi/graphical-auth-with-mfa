@@ -21,13 +21,18 @@ import { FormsModule } from '@angular/forms';
 import { HttpClientModule } from '@angular/common/http';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 import { GraphicLoginComponent } from './graphic-login/graphic-login.component';
-
+import { UserProfileComponent } from './user-profile/user-profile.component';
+import {MatToolbarModule} from '@angular/material/toolbar';
+import {MatMenuModule} from '@angular/material/menu';
+import { ResetLoginComponent } from './reset-login/reset-login.component';
 @NgModule({
   declarations: [
     AppComponent,
     IndexPageComponent,
     UserAccountCreationComponent,
-    GraphicLoginComponent
+    GraphicLoginComponent,
+    UserProfileComponent,
+    ResetLoginComponent
   ],
   imports: [
     BrowserModule,
@@ -48,6 +53,8 @@ import { GraphicLoginComponent } from './graphic-login/graphic-login.component';
     FormsModule,
     HttpClientModule,
     MatSnackBarModule,
+    MatToolbarModule,
+    MatMenuModule
   ],
   providers: [],
   bootstrap: [AppComponent]

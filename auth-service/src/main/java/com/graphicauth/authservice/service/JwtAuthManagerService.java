@@ -28,14 +28,10 @@ public class JwtAuthManagerService implements IJwtAuthManagerService{
     }
 
     @Override
-    public boolean validateToken(String token) throws Exception{
-        try {
-            Algorithm algorithm = Algorithm.HMAC256(jwtConfiguration.getSecret().getBytes());
-            JWTVerifier verifier = JWT.require(algorithm).build();
-            DecodedJWT decodedJWT = verifier.verify(token);
-            return true;
-        }catch (JWTVerificationException exception){
-            throw exception;
-        }
+    public boolean validateToken(String token) throws JWTVerificationException{
+        Algorithm algorithm = Algorithm.HMAC256(jwtConfiguration.getSecret().getBytes());
+        JWTVerifier verifier = JWT.require(algorithm).build();
+        verifier.verify(token);
+        return true;
     }
 }

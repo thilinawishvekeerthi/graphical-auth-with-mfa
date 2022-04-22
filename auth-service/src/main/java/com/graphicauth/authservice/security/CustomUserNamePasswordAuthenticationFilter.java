@@ -44,11 +44,11 @@ public class CustomUserNamePasswordAuthenticationFilter extends UsernamePassword
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         String userName = request.getParameter("userName");
         String passWord = request.getParameter("passWord");
-        String totp = request.getParameter("totp");
+        String totp = request.getParameter("totp") == null ||  request.getParameter("totp").equals("null") ? null : request.getParameter("totp");
         User user = userService.getUser(userName);
         String decryptPasPoints = AESCipherService.decrypt(user.getPassPoints());
 
-        if(graphicAuthService.authenticate(decryptPasPoints,passWord,user.getNumberOfPassPoints(),1L)){
+        if(Boolean.TRUE.equals(graphicAuthService.authenticate(decryptPasPoints,passWord,user.getNumberOfPassPoints(),10L))){
             passWord = decryptPasPoints;
         }
 
@@ -63,20 +63,20 @@ public class CustomUserNamePasswordAuthenticationFilter extends UsernamePassword
 
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authResult) throws IOException, ServletException {
-        String totp = request.getParameter("totp");
+        String totp = request.getParameter("totp") == null ||  request.getParameter("totp").equals("null") ? null : request.getParameter("totp");
         if(authResult.isAuthenticated() && totp != null){
             org.springframework.security.core.userdetails.User user = (org.springframework.security.core.userdetails.User)authResult.getPrincipal();
             Algorithm algorithm = Algorithm.HMAC256(jwtConfiguration.getSecret().getBytes());
             String accessToken = JWT.create()
                     .withSubject(user.getUsername())
                     .withExpiresAt(new Date(System.currentTimeMillis() + jwtConfiguration.getExpiration()))
-                    .withIssuer(request.getRequestURI().toString())
+                    .withIssuer(request.getRequestURI())
                     .withClaim("roles", user.getAuthorities().stream().map(GrantedAuthority::getAuthority).collect(Collectors.toList()))
                     .sign(algorithm);
             String refreshToken = JWT.create()
                     .withSubject(user.getUsername())
                     .withExpiresAt(new Date(System.currentTimeMillis() + jwtConfiguration.getExpiration()))
-                    .withIssuer(request.getRequestURI().toString())
+                    .withIssuer(request.getRequestURI())
                     .sign(algorithm);
 
             Map<String, String> tokens = new HashMap<>();

@@ -1,6 +1,6 @@
 package com.graphicauth.authservice.service;
 
-import com.graphicauth.authservice.entity.Image;
+import com.graphicauth.authservice.dto.ImageResponse;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
@@ -8,7 +8,7 @@ import java.io.IOException;
 public interface IImageService {
     Long save(MultipartFile imageFile) throws IOException;
 
-    byte[] getImageById(Long Id);
+    byte[] getImageById(Long id);
 
-    byte[] getImageByUserName(String username);
+    ImageResponse getImageByUserName(String username);
 }

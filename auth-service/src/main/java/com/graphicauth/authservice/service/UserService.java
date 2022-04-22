@@ -1,9 +1,7 @@
 package com.graphicauth.authservice.service;
 
-import com.fasterxml.jackson.databind.util.BeanUtil;
-import com.graphicauth.authservice.dto.SignUpRequest;
-import com.graphicauth.authservice.dto.SignUpResponse;
-import com.graphicauth.authservice.dto.UserDto;
+
+import com.graphicauth.authservice.dto.*;
 import com.graphicauth.authservice.entity.Role;
 import com.graphicauth.authservice.entity.User;
 import com.graphicauth.authservice.repo.RoleRepo;
@@ -19,12 +17,10 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.RequestBody;
 
-import javax.sql.rowset.serial.SerialBlob;
+
+
 import javax.transaction.Transactional;
-import javax.validation.Valid;
-import java.sql.Blob;
 import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -68,7 +64,6 @@ public class UserService implements  IUserService, UserDetailsService {
 
     @Override
     public List<UserDto> getAllUsers() {
-
         return userRepo.findAll().stream().map(user -> new UserDto(user.getId(),user.getUserName(), user.getEmail(), user.isActive(), user.isMfa(), user.getRoles())).collect(Collectors.toList());
     }
 
@@ -93,12 +88,37 @@ public class UserService implements  IUserService, UserDetailsService {
     }
 
     @Override
+    public ConfigDto getUserConfig(String userName) {
+        User user = getUser(userName);
+        if(user == null) throw  new UsernameNotFoundException("User Not Found");
+        return new ConfigDto(user.getUserName(), user.getCanvasX(), user.getCanvasY());
+    }
+
+    @Override
+    public Boolean resetUser(ResetUserRequest resetUserRequest) {
+        User user = getUser(resetUserRequest.getUserName());
+        if(user != null && user.getVerifyToken().equals(resetUserRequest.getVerifyToken())){
+            user.setPassWord(passwordEncoder.encode(resetUserRequest.getPassPoints()));
+            user.setPassPoints(AESCipherService.encrypt(resetUserRequest.getPassPoints()));
+            user.setNumberOfPassPoints(resetUserRequest.getNumberOfPassPoints());
+            user.setTolerance(resetUserRequest.getTolerance());
+            user.setImageRef(resetUserRequest.getImageRef());
+            user.setCanvasX(resetUserRequest.getCanvasX());
+            user.setCanvasY(resetUserRequest.getCanvasY());
+            userRepo.save(user);
+            return true;
+        }else{
+            throw new BadCredentialsException("Invalid Credentials");
+        }
+    }
+
+    @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         User user = userRepo.findByUserName(username);
         if(user == null) throw  new UsernameNotFoundException("User Not Found");
 
         Collection<SimpleGrantedAuthority> authorities = new ArrayList<>();
-        user.getRoles().forEach(role -> {authorities.add(new SimpleGrantedAuthority(role.getName()));});
+        user.getRoles().forEach(role -> authorities.add(new SimpleGrantedAuthority(role.getName())));
         return new org.springframework.security.core.userdetails.User(user.getUserName(), user.getPassWord(), authorities);
     }
 }

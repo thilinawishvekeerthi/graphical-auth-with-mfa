@@ -22,7 +22,7 @@
     </mat-card-content>
     <mat-card-actions class="button-set-1">
       <a routerLink="/create-account" class="new-link">create new account</a>
-      <button mat-raised-button color="primary" class="next-button">Next</button>
+      <button mat-raised-button color="primary" [disabled]="userNameFormControl.invalid" class="next-button"  (click)="nextButtonClick()">Next</button>
     </mat-card-actions>
    </div>
     

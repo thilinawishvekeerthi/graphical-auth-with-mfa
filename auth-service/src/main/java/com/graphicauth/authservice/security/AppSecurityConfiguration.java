@@ -34,18 +34,25 @@ public class AppSecurityConfiguration extends WebSecurityConfigurerAdapter {
     protected void configure(HttpSecurity http) throws Exception {
         CustomUserNamePasswordAuthenticationFilter customAuthenticationFilter = new CustomUserNamePasswordAuthenticationFilter(authenticationManagerBean(), userService, jwtConfiguration, totpAuthService, graphicAuthService);
         customAuthenticationFilter.setFilterProcessesUrl("/api/login");
+        String[] swaggerPaths = new String[]{"/swagger-ui.html","/swagger-ui/**", "/v3/api-docs/**" };
         http
                 .cors().and()
                 .csrf().disable()
                 .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 .and()
+                .authorizeRequests().antMatchers(swaggerPaths).permitAll()
+                .and()
                 .authorizeRequests().antMatchers("/api/login/**").permitAll()
                 .and()
                 .authorizeRequests().antMatchers("/api/auth/sign-up/**").permitAll()
                 .and()
+                .authorizeRequests().antMatchers("/api/auth/reset/**").permitAll()
+                .and()
                 .authorizeRequests().antMatchers("/api/auth/totp/**").permitAll()
                 .and()
                 .authorizeRequests().antMatchers("/api/image/**").permitAll()
+                .and()
+                .authorizeRequests().antMatchers("/api/user/config/**").permitAll()
                 .and()
                 .authorizeRequests().anyRequest().authenticated()
                 .and()
@@ -60,6 +67,7 @@ public class AppSecurityConfiguration extends WebSecurityConfigurerAdapter {
     }
 
     @Bean
+    @Override
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManager();
     }

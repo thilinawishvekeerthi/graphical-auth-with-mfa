@@ -1,1 +1,72 @@
-<p>graphic-login works!</p>
+<form class="form-1" >
+    <mat-drawer-container class="side-nav" flex >
+        <mat-drawer class="side-nav-drawer" mode="side" opened >
+            <mat-card class="center-card" >
+               <mat-card-subtitle class="sub-1">Login Account</mat-card-subtitle>
+                <!-- <mat-card-subtitle class="sub-2">Use Your Graphic Auth Account</mat-card-subtitle> -->
+                <mat-card-content>
+                  <form class="form-1">
+               
+                    <div *ngIf="!imageloading">
+                        <div class="row">
+                            <div class="col">
+                                <div class="passpoint-slider-label" >
+                                    <mat-icon class="passpoint-slider-badge" matBadge="{{clickPoints.length}}" matBadgeColor="primary">touch_app</mat-icon>
+                                    <label id="example-name-label" class="example-name-label">Please click password points </label>
+                                    <div style="float: right;padding-top: 8px; margin-right: 124px;">
+                                        <mat-icon *ngIf="!twofactorEnable" [ngStyle]="(clickPoints.length == 0)? { 'display': 'none' } : { 'color': 'black' }" aria-placeholder="reset" (click)="resetPoints()">restart_alt</mat-icon>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <section class="example-section">
+                                    <mat-progress-bar
+                                        class="example-margin"
+                                        [color]="'primary'"
+                                        [mode]="'buffer'"
+                                        [value]="100/numberOfPassPoints*(clickPoints.length)"
+                                        [bufferValue]="0">
+                                    </mat-progress-bar>
+                                  </section>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row login-container"  *ngIf="twofactorEnable" style="padding-top: 20px;">
+                        <div class="col">
+                          <mat-form-field class="full-width" appearance="fill">
+                              <mat-label>Enter TOTP</mat-label>
+                              <input matInput placeholder="" [formControl]="totpFormControl">
+                              <mat-error *ngIf="totpFormControl.hasError('required')">
+                                TOTP is <strong>required</strong>
+                              </mat-error>
+                            </mat-form-field>
+                        </div>
+                    </div>
+    
+                  </form>
+                </mat-card-content>
+                <mat-card-actions class="button-set-1">
+                 <a *ngIf="passwordRestButtonEnabled" routerLink="/reset-account/{{userNameEncrypted}}/{{canvasX}}/{{canvasY}}" class="new-link">reset password</a>
+                 <button 
+                 mat-raised-button color="primary" class="next-button"
+                 (click)="backButton()"
+                 >Back</button>
+                 <button *ngIf="!twofactorEnable"
+                  mat-raised-button color="primary" class="next-button"
+                  (click)="loginButtonClick()"
+                  [disabled]="clickPoints.length < 4">Login</button>
+                  <button mat-raised-button color="primary" class="next-button"
+                  *ngIf="twofactorEnable"
+                  (click)="loginButtonClick(true)"
+                  [disabled]="!totpFormControl.valid">Verify</button>
+                </mat-card-actions>
+            </mat-card>  
+        </mat-drawer>
+        <mat-drawer-content class="main-container">
+            <canvas #passwordCanvas width="canvasX" height="canvasY" id='password-canvas'>
+            </canvas>
+        </mat-drawer-content>
+    </mat-drawer-container>    
+</form>

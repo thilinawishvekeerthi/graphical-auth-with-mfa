@@ -6,20 +6,9 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 
 @Data
-public class SignUpRequest {
-
+public class ResetUserRequest {
     @NotBlank
     private String userName;
-
-    @NotBlank
-    private String passWord;
-
-    @NotBlank
-    private String email;
-
-    private boolean active;
-
-    private boolean mfa;
 
     @NotBlank()
     private String passPoints;
@@ -27,15 +16,14 @@ public class SignUpRequest {
     @NotNull()
     private Long numberOfPassPoints;
 
-    @NotNull()
     private Long tolerance;
 
-    @NotNull()
     private Long canvasX;
 
-    @NotNull()
     private Long canvasY;
 
-    @NotNull()
     private Long imageRef;
+
+    @NotBlank
+    private String verifyToken;
 }

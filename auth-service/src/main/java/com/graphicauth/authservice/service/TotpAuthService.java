@@ -1,5 +1,6 @@
 package com.graphicauth.authservice.service;
 
+import com.graphicauth.authservice.dto.TotpVerifyResponse;
 import com.graphicauth.authservice.entity.User;
 import com.graphicauth.authservice.repo.UserRepo;
 import dev.samstevens.totp.code.*;
@@ -13,6 +14,8 @@ import dev.samstevens.totp.time.SystemTimeProvider;
 import dev.samstevens.totp.time.TimeProvider;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.UUID;
 
 import static dev.samstevens.totp.util.Utils.getDataUriForImage;
 
@@ -39,13 +42,7 @@ public class TotpAuthService implements ITotpAuthService{
                 .build();
 
         QrGenerator generator = new ZxingPngQrGenerator();
-        byte[] imageData = new byte[0];
-
-        try {
-            imageData = generator.generate(data);
-        } catch (QrGenerationException e) {
-            throw e;
-        }
+        byte[] imageData = generator.generate(data);
 
         String mimeType = generator.getImageMimeType();
 
@@ -63,6 +60,22 @@ public class TotpAuthService implements ITotpAuthService{
     @Override
     public boolean verifyCodeByUser(String code, String userName) {
         User user = userRepo.findByUserName(userName);
-        return user != null && user.getTotpSecret() != null ? verifyCode(code,user.getTotpSecret()) : false;
+        return verify(code, user);
+    }
+
+    @Override
+    public TotpVerifyResponse verifyTotp(String code, String userName) {
+        User user = userRepo.findByUserName(userName);
+        boolean isVerified = verify(code, user);
+        String verifyToken = isVerified ? UUID.randomUUID().toString() : "";
+        user.setVerifyToken(verifyToken);
+        userRepo.save(user);
+
+        return new TotpVerifyResponse(isVerified, verifyToken);
+    }
+
+    private boolean verify(String code, User user) {
+        if(user != null && user.getTotpSecret() != null) return verifyCode(code, user.getTotpSecret());
+        else return false;
     }
 }

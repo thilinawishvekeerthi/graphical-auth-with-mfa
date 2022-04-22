@@ -2,24 +2,24 @@ import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild }
 import { FormControl, Validators } from '@angular/forms';
 import { ThemePalette } from '@angular/material/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { PRIMARY_OUTLET, Router } from '@angular/router';
+import { PRIMARY_OUTLET, Router, ActivatedRoute } from '@angular/router';
 import { fromEvent } from 'rxjs';
-import { UserAccountCreationService } from './user-account-creation.service';
-import {MatSnackBar} from '@angular/material/snack-bar';
+import { UserAccountCreationService } from '../user-account-creation/user-account-creation.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { GraphicLoginService } from '../graphic-login/graphic-login.service';
 
 @Component({
-  selector: 'app-user-account-creation',
-  templateUrl: './user-account-creation.component.html',
-  styleUrls: ['./user-account-creation.component.scss']
+  selector: 'app-reset-login',
+  templateUrl: './reset-login.component.html',
+  styleUrls: ['./reset-login.component.scss']
 })
-export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
+export class ResetLoginComponent implements OnInit {
 
   @ViewChild('passwordCanvas') public passwordCanvas? : ElementRef;
   @ViewChild('fileUpload') public fileUpload? : ElementRef;
   userNameFormControl = new FormControl('', [Validators.required]);
   totpFormControl = new FormControl('', [Validators.required]);
   private canvasRenderContext!: CanvasRenderingContext2D;
-  private defaultImageUrl : string = "assets/image/default-image.jpg";
   public imagePasswordUploaded :boolean = false;
   public fileName : string = "";
   private imagefile: any;
@@ -31,10 +31,15 @@ export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
   passPointObj : any = null;
   tolerance : number = 10;
   public repeatProgressColor : ThemePalette =PRIMARY_OUTLET ;
+  private userName : string ="";
+  private passwordImage:any;
+  public verifyTotpProcess = true;
+  private imageId : number = 0;
 
   constructor(private userAccountService: UserAccountCreationService,
-              private sanitizer:DomSanitizer,
+              private route: ActivatedRoute,
               private _snackBar: MatSnackBar,
+              private loginService : GraphicLoginService,
               private router: Router) { }
   
   ngAfterViewInit(): void { 
@@ -45,8 +50,20 @@ export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
   }
 
   ngOnInit(): void {
-    this.canvasX = window.innerWidth-401;
-    this.canvasY = window.innerHeight-6;
+    this.route.params.subscribe(params => {
+      this.userName = atob(params['userName']);
+      this.canvasX = Number(params['canvasX']);
+      this.canvasY = Number(params['canvasY']);
+      this.loginService.getImagePassword(this.userName).subscribe(res=>{
+        if(res){
+          this.imageId = res.id;
+          this.fileName = "selection completed"
+          this.passwordImage =res.file;
+          this.initCanvas();
+        }
+      });
+      this.userNameFormControl.patchValue(this.userName);
+    });
   }
 
   @HostListener('window:resize', ['$event'])
@@ -59,12 +76,6 @@ export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
     if(canvasContent){
       if(this.fileName){
         this.setUploadImageFromCache();
-      }else{
-        let backgroundImage = new Image();
-        backgroundImage.src = this.defaultImageUrl;
-        backgroundImage.onload=()=>{
-          this.canvasRenderContext.drawImage(backgroundImage, 0, 0,this.canvasX, this.canvasY);
-        }
       }
     }
   }
@@ -77,7 +88,7 @@ export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
     this.canvasRenderContext.restore();
     setTimeout(()=>{
       let backgroundImage = new Image();
-      backgroundImage.src = this.defaultImageUrl;
+      backgroundImage.src = this.passwordImage;
       backgroundImage.onload=()=>{
         if(this.fileName)
             this.setUploadImageFromCache();
@@ -128,18 +139,27 @@ export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
   }
 
   setUploadImageFromCache(){
-    var reader = new FileReader();
-    reader.onload = (event :any)=>{
-        let backgroundImage = new Image();
-        backgroundImage.src = event.target.result;
-        backgroundImage.onload =()=>{
-          this.canvasRenderContext.drawImage(backgroundImage, 0, 0,this.canvasX, this.canvasY);
-          this.fileName = "upload completed"
-          this.drawGrid();
-        }
-       
+    if(this.imagefile){
+      var reader = new FileReader();
+      reader.onload = (event :any)=>{
+          let backgroundImage = new Image();
+          backgroundImage.src = event.target.result;
+          backgroundImage.onload =()=>{
+            this.canvasRenderContext.drawImage(backgroundImage, 0, 0,this.canvasX, this.canvasY);
+            this.fileName = "upload completed"
+            this.drawGrid();
+          }
+         
+      }
+      reader.readAsDataURL(this.imagefile);    
+    }else if(this.passwordImage){
+      let backgroundImage = new Image();
+      backgroundImage.src = this.passwordImage;
+      backgroundImage.onload =()=>{
+      this.canvasRenderContext.drawImage(backgroundImage, 0, 0,this.canvasX, this.canvasY);
+        this.drawGrid();
+      }
     }
-    reader.readAsDataURL(this.imagefile);    
   }
 
   uploadButtonClick($event: MouseEvent){
@@ -184,49 +204,69 @@ export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
         this.passPointObj = "Error miss match";
         this.repeatClickPoints = [];
         this.repeatProgressColor = 'warn';
-      } 
+      }
+      
+      
     }
   }
 
-  public qrCodeEnable :boolean = false;
-  public qrUri : string = "";
+
   nextButtonClick(){
-    this.userAccountService.uploadImage(this.imagefile).subscribe(res=>{
-      if(res){
-        let account = {
-          userName : this.userNameFormControl.value,
-          passWord : this.userAccountService.generatePassword(this.clickPoints),
-          email: `${this.userNameFormControl.value}@email.com`,
-          active : true,
-          mfa : true,
-          passPoints: this.userAccountService.generatePassword(this.clickPoints),
-          numberOfPassPoints: this.numberOfPassPoints,
-          tolerance: this.tolerance,
-          canvasX: this.canvasX,
-          canvasY: this.canvasY,
-          imageRef: res
+    if(this.imagefile){
+      this.userAccountService.uploadImage(this.passwordImage).subscribe(res=>{
+        if(res){
+          let resetUserRequest = {
+            userName: this.userName,
+            passWord : this.userAccountService.generatePassword(this.clickPoints),
+            passPoints: this.userAccountService.generatePassword(this.clickPoints),
+            numberOfPassPoints: this.numberOfPassPoints,
+            tolerance: this.tolerance,
+            canvasX: this.canvasX,
+            canvasY: this.canvasY,
+            verifyToken: this.verifyToken,
+            imageRef: res
+          }
+          this.resetAccount(resetUserRequest);
         }
-        this.userAccountService.createAccount(account).subscribe(res=>{
-          if(res && res.secretImageUri != null){
-            this.qrCodeEnable = true;
-            this.qrUri = res.secretImageUri;
-          }
-        }, err=>{
-          if(err.status == 403){
-            this._snackBar.open("User name already exists!!","close",{
-              horizontalPosition:"left",
-              verticalPosition: "top",
-              duration: 4 * 1000,
-            });
-          }
-          
-        });
+      })
+    }else if(this.passwordImage){
+      let resetUserRequest = {
+        userName: this.userName,
+        passWord : this.userAccountService.generatePassword(this.clickPoints),
+        passPoints: this.userAccountService.generatePassword(this.clickPoints),
+        numberOfPassPoints: this.numberOfPassPoints,
+        tolerance: this.tolerance,
+        canvasX: this.canvasX,
+        canvasY: this.canvasY,
+        verifyToken: this.verifyToken,
+        imageRef: this.imageId
       }
-    })
+      this.resetAccount(resetUserRequest);
+    }
+   
   }
 
-  qrCode(){
-    return this.sanitizer.bypassSecurityTrustResourceUrl(this.qrUri);
+  verifyToken : string = "";
+  private resetAccount(resetUserRequest: any) {
+    this.userAccountService.resetAccount(resetUserRequest).subscribe(res => {
+      if (res) {
+        this._snackBar.open("password reset complete", "close", {
+          horizontalPosition: "left",
+          verticalPosition: "top",
+          duration: 4 * 1000,
+        });
+        this.router.navigate(['']);
+      }
+    }, err => {
+      if (err.status == 403) {
+        this._snackBar.open("Invalid credentioals", "close", {
+          horizontalPosition: "left",
+          verticalPosition: "top",
+          duration: 4 * 1000,
+        });
+      }
+
+    });
   }
 
   verify(){
@@ -234,14 +274,18 @@ export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
       totp : this.totpFormControl.value,
       userName: this.userNameFormControl.value
     }
-    this.userAccountService.verifyTotp(verifyRequest).subscribe(res=>{
-      if(res){
+    this.userAccountService.verifyTotpUpdate(verifyRequest).subscribe(res=>{
+      if(res && res.verified){
         this._snackBar.open("totp correct","close",{
           horizontalPosition:"left",
           verticalPosition: "top",
           duration: 4 * 1000,
         });
-        this.router.navigate(['']);
+        this.verifyTotpProcess = false;
+        this.fileName = "image selected";
+        this.imagePasswordUploaded = true;
+        this.verifyToken = res.veryToken;
+        this.initCanvas();
       }else{
         this._snackBar.open("totp incorrect","close",{
           horizontalPosition:"left",
@@ -251,4 +295,5 @@ export class UserAccountCreationComponent implements OnInit,  AfterViewInit {
       }
     });
   }
+
 }

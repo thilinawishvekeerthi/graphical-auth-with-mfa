@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class JwtConfiguration {
 
     @Value("${app.security.jwt.uri}")
-    private String Uri;
+    private String uri;
 
     @Value("${app.security.jwt.header}")
     private String header;
