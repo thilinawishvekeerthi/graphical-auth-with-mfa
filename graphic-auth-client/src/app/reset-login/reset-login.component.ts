@@ -216,7 +216,7 @@ export class ResetLoginComponent implements OnInit {
 
   nextButtonClick(){
     if(this.imagefile){
-      this.userAccountService.uploadImage(this.passwordImage).subscribe(res=>{
+      this.userAccountService.uploadImage(this.imagefile).subscribe(res=>{
         if(res){
           let resetUserRequest = {
             userName: this.userName,
