@@ -1,5 +1,5 @@
 # graphical-auth-with-mfa
-the usage of graphical auth with spring security, angular and posgresql. an alternative for traditional password authentication
+Graphical pass-point authentication with spring security, angular and posgresql. an alternative for traditional password authentication
 
 Graphic Auth Functionalities:
 
